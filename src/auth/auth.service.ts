@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCustomerDto } from './dto/create-customer.dto';
-import { UpdateCustomerDto } from './dto/update-customer.dto';
-import {Customer} from './squemas/customer.squema'
+import { CreateCustomerDto } from './dto/create-auth.dto';
+import { UpdateCustomerDto } from './dto/update-auth.dto';
+import {Customer} from './squemas/user.squema'
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 
 @Injectable()
-export class CustomersService {
+export class authService {
   constructor(@InjectModel(Customer.name) private customerModel: Model<Customer>) {}
   async create(createCustomerDto: CreateCustomerDto) {
     const createCustomer = new this.customerModel(createCustomerDto);

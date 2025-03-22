@@ -12,6 +12,6 @@ export class Customer extends Document{
     age: number;
 }
 
-export const CustomerSquema = SchemaFactory.createForClass(Customer)
+export const authquema = SchemaFactory.createForClass(Customer)
 
 
