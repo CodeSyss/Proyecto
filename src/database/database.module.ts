@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DatabaseService } from './database.service';
-import { ConfigModule } from '@nestjs/config';
+import { MongooseDatabaseModule } from './mongoose/mongoose.module';
+import { Neo4jModule } from './neo4j/neo4j.module';
 
 @Module({
-  imports: [ConfigModule.forRoot()],
-  providers: [DatabaseService],
-  exports: [DatabaseService], 
+  imports: [MongooseDatabaseModule, Neo4jModule],
+  exports: [MongooseDatabaseModule, Neo4jModule],
 })
 export class DatabaseModule {}

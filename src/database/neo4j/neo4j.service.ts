@@ -3,7 +3,7 @@ import neo4j, { Driver, Session } from 'neo4j-driver';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class DatabaseService implements OnModuleInit, OnModuleDestroy {
+export class Neo4jService implements OnModuleInit, OnModuleDestroy {
     private driver: Driver;
     private isDriverInitialized: boolean = false;
     private driverInitializedPromise: Promise<void>;
