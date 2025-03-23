@@ -1,34 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCustomerDto } from './dto/create-auth.dto';
-import { UpdateCustomerDto } from './dto/update-auth.dto';
-import {Customer} from './squemas/user.squema'
+import { CreateAuthDto } from './dto/create-auth.dto';
+import { UpdateAuthDto } from './dto/update-auth.dto';
+import {User} from './squemas/user.squema'
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 
 @Injectable()
 export class authService {
-  constructor(@InjectModel(Customer.name) private customerModel: Model<Customer>) {}
-  async create(createCustomerDto: CreateCustomerDto) {
-    const createCustomer = new this.customerModel(createCustomerDto);
-    return createCustomer.save();
+  constructor(@InjectModel(User.name) private authModel: Model<User>) {}
+  async create(createAuthDto: CreateAuthDto) {
+    const createAuth = new this.authModel(createAuthDto);
+    return createAuth.save();
   }
 
   async findAll() {
-    return this.customerModel.find().exec();
+    return this.authModel.find().exec();
   }
 
   async findOne(id: string) {
-    return this.customerModel.findById(id).exec();
+    return this.authModel.findById(id).exec();
   }
 
-  async update(id: string, updateCustomerDto: UpdateCustomerDto) {
-    return this.customerModel
-    .findByIdAndUpdate(id, updateCustomerDto, { new: true })
+  async update(id: string, updateAuthDto: UpdateAuthDto) {
+    return this.authModel
+    .findByIdAndUpdate(id, updateAuthDto, { new: true })
     .exec();
   }
 
   async remove(id: string) {
-    return this.customerModel.findByIdAndDelete(id).exec();
+    return this.authModel.findByIdAndDelete(id).exec();
   }
 }
