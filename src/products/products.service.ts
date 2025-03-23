@@ -7,23 +7,27 @@ import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class ProductsService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  constructor(@InjectModel(Product.name) private ProductModel: Model<Product>) {}
+  async create(createProductDto: CreateProductDto) {
+    const createProduct = new this.ProductModel(createProductDto);
+    return createProduct.save();
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll() {
+    return this.ProductModel.find().exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string) {
+    return this.ProductModel.findById(id).exec();
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto) {
+    return this.ProductModel
+    .findByIdAndUpdate(id, updateProductDto, { new: true })
+    .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    return this.ProductModel.findByIdAndDelete(id).exec();
   }
 }
