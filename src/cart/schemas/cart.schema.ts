@@ -3,13 +3,14 @@ import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Cart extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'Customer', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user: Types.ObjectId;
 
   @Prop([
     {
       product: { type: Types.ObjectId, ref: 'Product', required: true },
       quantity: { type: Number, required: true, min: 1 },
+      _id: false
     },
   ])
   items: {

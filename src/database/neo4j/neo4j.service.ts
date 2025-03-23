@@ -45,7 +45,7 @@ export class Neo4jService implements OnModuleInit, OnModuleDestroy {
         if (!this.isDriverInitialized) {
             throw new Error('Driver de Neo4j no inicializado');
         }
-
+        
         return this.driver.session();
     }
 }

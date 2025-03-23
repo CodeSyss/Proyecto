@@ -1,19 +1,30 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Cart } from './schemas/cart.schema';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 import { RemoveFromCartDto } from './dto/remove-cart.dto';
-import { Types } from 'mongoose';
+import { User } from '../auth/schemas/user.schema'; 
 
 @Injectable()
 export class CartService {
-  constructor(@InjectModel(Cart.name) private cartModel: Model<Cart>) {}
+  constructor(
+    @InjectModel(Cart.name) private cartModel: Model<Cart>,
+    @InjectModel(User.name) private userModel: Model<User>, // Inyecta el modelo de usuarios
+  ) {}
 
-  // Agrega un producto al carrito (o crear carrito si no existe) 
-  // Falta arreglar el userId ya que recibe cualquier cosa. 
-  async create(userId: Types.ObjectId, createCartDto: CreateCartDto) {
+  // Agregar producto al carrito (o crear carrito si no existe)
+  async create(userId: string, createCartDto: CreateCartDto) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('El ID del usuario no es válido');
+    }
+
+    const userExists = await this.userModel.exists({ _id: userId });
+    if (!userExists) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
     let cart = await this.cartModel.findOne({ user: userId });
 
     if (!cart) {
@@ -37,20 +48,29 @@ export class CartService {
     return cart;
   }
 
-  // Get todos los carritos
+  // Obtener todos los carritos
   async findAll() {
     return await this.cartModel.find().exec();
   }
 
-  // Get un carrito por id de usuario
-  async findOne(userId: Types.ObjectId) {
+  // Obtener un carrito por ID de usuario
+  async findOne(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('El ID del usuario no es válido');
+    }
+
     const cart = await this.cartModel.findOne({ user: userId }).populate('items.product');
     if (!cart) throw new NotFoundException(`Carrito de usuario ${userId} no encontrado`);
+
     return cart;
   }
 
-  // Actualiza la cantidad de un producto en el carrito
-  async update(userId: Types.ObjectId, updateCartDto: UpdateCartDto) {
+  // Actualizar la cantidad de un producto en el carrito
+  async update(userId: string, updateCartDto: UpdateCartDto) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('El ID del usuario no es válido');
+    }
+
     const cart = await this.cartModel.findOne({ user: userId });
     if (!cart) throw new NotFoundException('Carrito no encontrado');
 
@@ -65,8 +85,12 @@ export class CartService {
     return cart;
   }
 
-  // Elimina un producto del carrito
-  async remove(userId: Types.ObjectId, removeCartDto: RemoveFromCartDto) {
+  // Eliminar un producto del carrito
+  async remove(userId: string, removeCartDto: RemoveFromCartDto) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('El ID del usuario no es válido');
+    }
+
     const cart = await this.cartModel.findOne({ user: userId });
     if (!cart) throw new NotFoundException('Carrito no encontrado');
 
