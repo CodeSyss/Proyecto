@@ -31,5 +31,4 @@ export class authService {
   async remove(id: string) {
     return this.customerModel.findByIdAndDelete(id).exec();
   }
-  
 }
