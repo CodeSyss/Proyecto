@@ -18,7 +18,7 @@ export class Order extends Document {
     quantity: number;
   }[];
 
-  @Prop({ default: false })
+  @Prop({ type: Number, required: true })
   numOrder: number;
 }
 
