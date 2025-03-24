@@ -11,7 +11,7 @@ import { User } from '../auth/schemas/user.schema';
 export class CartService {
   constructor(
     @InjectModel(Cart.name) private cartModel: Model<Cart>,
-    @InjectModel(User.name) private userModel: Model<User>, // Inyecta el modelo de usuarios
+    @InjectModel(User.name) private userModel: Model<User>, 
   ) {}
 
   // Agregar producto al carrito (o crear carrito si no existe)
