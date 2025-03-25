@@ -3,6 +3,10 @@ import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Order extends Document {
+
+  @Prop({ type: Number, required: true })
+  numOrder: number;
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user: Types.ObjectId;
 
@@ -19,7 +23,7 @@ export class Order extends Document {
   }[];
 
   @Prop({ type: Number, required: true })
-  numOrder: number;
+  totalAmount: number; 
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
