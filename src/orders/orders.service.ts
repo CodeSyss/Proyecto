@@ -3,10 +3,10 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './schemas/order.schema';
-import { Cart } from '../cart/schemas/cart.schema'; // Importa el modelo del carrito
+import { Cart } from '../cart/schemas/cart.schema'; 
 import { Model, Types } from 'mongoose';
 import { User } from '../auth/schemas/user.schema';
-import { Product } from '../products/schemas/product.schema'; // Importa el modelo de producto
+import { Product } from '../products/schemas/product.schema'; 
 
 @Injectable()
 export class OrdersService {

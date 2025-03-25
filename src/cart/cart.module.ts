@@ -10,6 +10,7 @@ import { authModule } from '../auth/auth.module';
     MongooseModule.forFeature([{ name: Cart.name, schema: CartSchema }]), 
     authModule
   ],
+  exports: [MongooseModule],
   controllers: [CartController],
   providers: [CartService], 
 })
