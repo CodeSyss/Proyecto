@@ -5,13 +5,14 @@ import {User} from './schemas/user.schema'
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { LoginDto } from './dto/login.dto';
-//import { JwtService } from '@nestjs/jwt';
-//import * as bcrypt from 'bcryptjs';
 import {hash, compare} from  'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class authService {
-  constructor(@InjectModel(User.name) private authModel: Model<User>) {}
+  constructor(@InjectModel(User.name) private authModel: Model<User>,
+  private jwtService:JwtService
+) {}
 
   
   async create(createAuthDto: CreateAuthDto) {
@@ -50,8 +51,13 @@ export class authService {
     const checkPassword = await compare(password, findUser.password);
     if(!checkPassword) throw new HttpException('PASSWORD_INVALID', 403);
     
+    const payload= {id:findUser._id, name: findUser.name};
+    const token= this.jwtService.sign(payload);
 
-    const data=findUser;
+    const data={
+      user:findUser,
+      token
+    };
     return data;
 
 
