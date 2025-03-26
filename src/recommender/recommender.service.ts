@@ -9,28 +9,33 @@ export class RecommenderService {
     const session = await this.neo4jService.getSession();
     try {
       const query = `
-        // 1. Productos que el usuario ha comprado (a través de órdenes)
-        MATCH (u:User {id: $userId})-[:PLACED_ORDER]->(:Order)-[:CONTAINS_PRODUCT]->(purchasedProduct:Product)
-        WITH COLLECT(DISTINCT purchasedProduct.id) AS purchasedProductIds
-        
-        // 2. Productos en el carrito del usuario (si existen)
-        OPTIONAL MATCH (u)-[:ADDED_TO_CART]->(cartProduct:Product)
-        WITH purchasedProductIds + COLLECT(DISTINCT cartProduct.id) AS allUserProductIds
-        
-        // 3. Usuarios con gustos similares (que compraron los mismos productos)
-        MATCH (similarUser:User)-[:PLACED_ORDER]->(:Order)-[:CONTAINS_PRODUCT]->(sharedProduct:Product)
-        WHERE sharedProduct.id IN allUserProductIds AND similarUser.id <> $userId
-        
-        // 4. Productos recomendados (que los usuarios similares compraron pero el usuario actual no)
-        MATCH (similarUser)-[:PLACED_ORDER]->(:Order)-[:CONTAINS_PRODUCT]->(recommendation:Product)
-        WHERE NOT recommendation.id IN allUserProductIds
-        
-        // 5. Ordenar por relevancia (productos más comprados por usuarios similares)
-        RETURN recommendation.id AS productId, 
-               recommendation.name AS productName, 
-               COUNT(*) AS relevance
-        ORDER BY relevance DESC
-        LIMIT 5;
+      // 1. Obtener los productos que el usuario ha comprado
+      MATCH (u:User {id: $userId})-[:PLACED_ORDER]->(:Order)-[:CONTAINS_PRODUCT]->(purchasedProduct:Product)
+      WITH u, COLLECT(DISTINCT purchasedProduct.id) AS purchasedProductIds
+
+      // 2. Obtener los productos en el carrito del usuario (si existen)
+      OPTIONAL MATCH (u)-[:ADDED_TO_CART]->(cartProduct:Product)
+      WITH purchasedProductIds, COLLECT(DISTINCT cartProduct.id) AS cartProductIds
+
+      // 3. Unir ambas listas en una sola
+      WITH purchasedProductIds + cartProductIds AS allUserProductIds
+
+      // 4. Encontrar usuarios con gustos similares
+      MATCH (similarUser:User)-[:PLACED_ORDER]->(:Order)-[:CONTAINS_PRODUCT]->(sharedProduct:Product)
+      WHERE sharedProduct.id IN allUserProductIds AND similarUser.id <> $userId
+      WITH allUserProductIds, similarUser
+
+      // 5. Obtener productos recomendados (que los usuarios similares compraron pero el usuario actual no)
+      MATCH (similarUser)-[:PLACED_ORDER]->(:Order)-[:CONTAINS_PRODUCT]->(recommendation:Product)
+      WHERE NOT recommendation.id IN allUserProductIds
+      WITH recommendation, COUNT(*) AS relevance
+
+      // 6. Ordenar y devolver los productos recomendados
+      RETURN recommendation.id AS productId, 
+            recommendation.name AS productName, 
+            relevance
+      ORDER BY relevance DESC
+      LIMIT 5;
       `;
 
       const result = await session.run(query, { userId });
