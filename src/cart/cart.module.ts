@@ -12,6 +12,7 @@ import { Neo4jModule } from 'src/database/neo4j/neo4j.module';
     authModule,
     Neo4jModule
   ],
+  exports: [MongooseModule],
   controllers: [CartController],
   providers: [CartService], 
 })
