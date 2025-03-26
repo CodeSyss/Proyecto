@@ -6,12 +6,14 @@ import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 import { RemoveFromCartDto } from './dto/remove-cart.dto';
 import { User } from '../auth/schemas/user.schema'; 
+import { Neo4jService } from '../database/neo4j/neo4j.service';
 
 @Injectable()
 export class CartService {
   constructor(
     @InjectModel(Cart.name) private cartModel: Model<Cart>,
     @InjectModel(User.name) private userModel: Model<User>, 
+    private readonly neo4jService: Neo4jService, 
   ) {}
 
   // Agregar producto al carrito (o crear carrito si no existe)
@@ -45,6 +47,28 @@ export class CartService {
     }
 
     await cart.save();
+
+    // Registrar la relación en Neo4j
+    const session = await this.neo4jService.getSession();
+    try {
+      await session.run(
+        `
+        MERGE (u:User {id: $userId})
+        MERGE (p:Product {id: $productId})
+        MERGE (u)-[r:ADDED_TO_CART]->(p)
+        ON CREATE SET r.quantity = $quantity
+        ON MATCH SET r.quantity = r.quantity + $quantity
+        `,
+        {
+          userId,
+          productId: createCartDto.productId,
+          quantity: createCartDto.quantity,
+        }
+      );
+    } finally {
+      await session.close();
+    }
+
     return cart;
   }
 
@@ -82,6 +106,25 @@ export class CartService {
 
     item.quantity = updateCartDto.quantity ?? item.quantity;
     await cart.save();
+
+    // Actualizar la cantidad en Neo4j
+    const session = await this.neo4jService.getSession();
+    try {
+      await session.run(
+        `
+        MATCH (u:User {id: $userId})-[r:ADDED_TO_CART]->(p:Product {id: $productId})
+        SET r.quantity = $quantity
+        `,
+        {
+          userId,
+          productId: updateCartDto.productId,
+          quantity: updateCartDto.quantity,
+        }
+      );
+    } finally {
+      await session.close();
+    }
+
     return cart;
   }
 
@@ -99,6 +142,24 @@ export class CartService {
     );
 
     await cart.save();
+
+    // Eliminar la relación en Neo4j
+    const session = await this.neo4jService.getSession();
+    try {
+      await session.run(
+        `
+        MATCH (u:User {id: $userId})-[r:ADDED_TO_CART]->(p:Product {id: $productId})
+        DELETE r
+        `,
+        {
+          userId,
+          productId: removeCartDto.productId,
+        }
+      );
+    } finally {
+      await session.close();
+    }
+
     return cart;
   }
 }

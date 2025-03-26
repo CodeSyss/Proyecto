@@ -10,4 +10,3 @@ export class RecommenderController {
     return this.recommenderService.getRecommendations(userId);
   }
 }
-

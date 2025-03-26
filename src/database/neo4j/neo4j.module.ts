@@ -8,4 +8,3 @@ import { ConfigModule } from '@nestjs/config';
   exports: [Neo4jService],
 })
 export class Neo4jModule {}
-
